@@ -1,0 +1,58 @@
+<nav class="navbar navbar-expand-lg navbar-light">
+    <div class="container">
+        <!-- Brand -->
+        <a routerLink="/" class="navbar-brand">
+            <img src="favicon.ico" alt="TechNest" class="logo">
+            <i class="text-white">TechNest</i>
+        </a>
+
+        <!-- Toggler -->
+        <button class="navbar-toggler" type="button" (click)="isCollapsed = !isCollapsed">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <!-- Navbar content -->
+        <div class="collapse navbar-collapse" [ngClass]="{'show': !isCollapsed}">
+            <!-- Left links -->
+            <ul class="navbar-nav">
+                <li class="nav-item"><a routerLink="/" class="nav-link">Home</a></li>
+                <li class="nav-item"><a href="#" class="nav-link">Shopping</a></li>
+                <li class="nav-item"><a href="#" class="nav-link">About us</a></li>
+                <li class="nav-item"><a href="#" class="nav-link">Best Seller</a></li>
+            </ul>
+
+            <!-- Search bar -->
+            <form class="form-inline mx-auto">
+                <div class="input-group">
+                    <input type="text" class="form-control" placeholder="Search for products, brands and more">
+                    <div class="input-group-append">
+                        <button class="btn btn-outline-secondary" type="button">
+                            <i class="material-icons">search</i>
+                        </button>
+                    </div>
+                </div>
+            </form>
+
+            <!-- Right icons -->
+            <ul class="navbar-nav ml-auto align-items-center">
+                <li class="nav-item">
+                    <a href="#" class="nav-link">
+                        <i class="material-icons">shopping_cart</i>
+                    </a>
+                </li>
+
+                <!-- User Dropdown -->
+                <li class="nav-item dropdown" (click)="toggleDropdown()">
+                    <a class="nav-link" style="cursor:pointer">
+                        <i class="material-icons">account_circle</i>
+                    </a>
+                    <div class="dropdown-menu dropdown-menu-right" [ngClass]="{'show': dropdownVisible}">
+                        <a class="dropdown-item" href="#">Register <i class="fa fa-user-plus"></i></a>
+                        <a class="dropdown-item" href="#">Login <i class="fa fa-sign-in"></i></a>
+                        <a class="dropdown-item" href="#">My Order</a>
+                    </div>
+                </li>
+            </ul>
+        </div>
+    </div>
+</nav>
