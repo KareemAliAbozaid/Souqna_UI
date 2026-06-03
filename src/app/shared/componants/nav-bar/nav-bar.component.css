@@ -39,6 +39,11 @@
     background-color: rgba(255, 255, 255, 0.05);
 }
 
+.navbar-nav .nav-link.active {
+    color: #4facfe;
+    background-color: rgba(79, 172, 254, 0.15);
+}
+
 .form-control {
     border-radius: 20px 0 0 20px;
     border: none;

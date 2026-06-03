@@ -1,0 +1,110 @@
+<div class="container mt-4">
+  <h2 class="mb-3">
+    {{ isEditMode ? 'Edit Product' : 'Add Product' }}
+  </h2>
+
+  <div *ngIf="isLoading" class="alert alert-info">
+    Loading data...
+  </div>
+
+  <div *ngIf="errorMessage && !isLoading" class="alert alert-danger">
+    {{ errorMessage }}
+  </div>
+
+  <form [formGroup]="form" (ngSubmit)="onSubmit()" novalidate>
+    <div class="mb-3">
+      <label for="name" class="form-label">Name</label>
+      <input id="name" type="text" class="form-control" formControlName="name" />
+      <div *ngIf="name?.invalid && (name?.dirty || name?.touched)" class="text-danger mt-1">
+        Name is required.
+      </div>
+    </div>
+
+    <div class="mb-3">
+      <label for="description" class="form-label">Description</label>
+      <textarea id="description" rows="3" class="form-control" formControlName="description"></textarea>
+    </div>
+
+    <div class="row">
+      <div class="col-md-4 mb-3">
+        <label for="newPrice" class="form-label">New price</label>
+        <input id="newPrice" type="number" step="0.01" min="0" class="form-control" formControlName="newPrice" />
+        <div *ngIf="newPrice?.invalid && (newPrice?.dirty || newPrice?.touched)" class="text-danger mt-1">
+          <span *ngIf="newPrice?.errors?.['required']">New price is required.</span>
+          <span *ngIf="newPrice?.errors?.['min']">New price must be greater than 0.</span>
+        </div>
+      </div>
+
+      <div class="col-md-4 mb-3">
+        <label for="oldPrice" class="form-label">Old price</label>
+        <input id="oldPrice" type="number" step="0.01" min="0" class="form-control" formControlName="oldPrice" />
+        <div *ngIf="oldPrice?.invalid && (oldPrice?.dirty || oldPrice?.touched)" class="text-danger mt-1">
+          <span *ngIf="oldPrice?.errors?.['required']">Old price is required.</span>
+          <span *ngIf="oldPrice?.errors?.['min']">Old price must be greater than 0.</span>
+        </div>
+      </div>
+
+      <div class="col-md-4 mb-3">
+        <label for="categoryId" class="form-label">Category</label>
+        <select id="categoryId" class="form-select" formControlName="categoryId">
+          <option [ngValue]="0">Select category</option>
+          <option *ngFor="let category of categories" [ngValue]="category.id">
+            {{ category.name }}
+          </option>
+        </select>
+        <div *ngIf="categoryId?.invalid && (categoryId?.dirty || categoryId?.touched)" class="text-danger mt-1">
+          Category is required.
+        </div>
+      </div>
+    </div>
+
+    <div class="mb-3">
+      <label for="photos" class="form-label">Photos</label>
+      <input
+        id="photos"
+        type="file"
+        class="form-control"
+        accept="image/*"
+        multiple
+        (change)="onFilesSelected($event)" />
+      <div class="form-text">
+        {{ isEditMode ? 'Upload new photos to replace existing ones (optional).' : 'At least one photo is required.' }}
+      </div>
+      <div *ngIf="photosRequiredError" class="text-danger mt-1">
+        Please select at least one photo.
+      </div>
+      <div *ngIf="selectedFiles.length > 0" class="text-muted small mt-1">
+        {{ selectedFiles.length }} file(s) selected
+      </div>
+    </div>
+
+    <div *ngIf="existingImageUrls.length > 0" class="mb-3">
+      <label class="form-label">Current photos ({{ existingImageUrls.length }})</label>
+      <div class="d-flex flex-wrap gap-2">
+        <img
+          *ngFor="let url of existingImageUrls"
+          [src]="url"
+          alt="Current product"
+          class="current-product-image" />
+      </div>
+    </div>
+
+    <div *ngIf="selectedPreviewUrls.length > 0" class="mb-3">
+      <label class="form-label">New photos preview ({{ selectedPreviewUrls.length }})</label>
+      <div class="d-flex flex-wrap gap-2">
+        <img
+          *ngFor="let url of selectedPreviewUrls"
+          [src]="url"
+          alt="Selected photo"
+          class="current-product-image" />
+      </div>
+    </div>
+
+    <div class="d-flex justify-content-end mt-3">
+      <a class="btn btn-secondary me-2" [routerLink]="['/products']">Cancel</a>
+      <button type="submit" class="btn btn-primary" [disabled]="form.invalid || isSaving">
+        {{ isSaving ? 'Saving...' : (isEditMode ? 'Update' : 'Create') }}
+      </button>
+    </div>
+  </form>
+</div>

@@ -1,0 +1,90 @@
+.shop-page .list-group-item.active {
+  background-color: #6f42c1;
+  border-color: #6f42c1;
+}
+
+.product-card {
+  transition: transform 0.15s ease-in-out;
+}
+
+.product-card:hover {
+  transform: translateY(-2px);
+}
+
+.product-image-wrap {
+  position: relative;
+  min-height: 220px;
+  background-color: #f8f9fa;
+}
+
+.gallery-nav {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  border: none;
+  background: rgba(0, 0, 0, 0.45);
+  color: #fff;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  line-height: 1;
+  font-size: 1.25rem;
+  cursor: pointer;
+}
+
+.gallery-nav-prev {
+  left: 8px;
+}
+
+.gallery-nav-next {
+  right: 8px;
+}
+
+.gallery-dots {
+  position: absolute;
+  bottom: 8px;
+  left: 0;
+  right: 0;
+  display: flex;
+  justify-content: center;
+  gap: 6px;
+}
+
+.gallery-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  border: none;
+  padding: 0;
+  background: rgba(255, 255, 255, 0.6);
+  cursor: pointer;
+}
+
+.gallery-dot.active {
+  background: #fff;
+}
+
+.product-image,
+.product-image-placeholder {
+  height: 220px;
+  width: 100%;
+}
+
+.product-image {
+  object-fit: cover;
+}
+
+.product-image-placeholder {
+  position: absolute;
+  inset: 0;
+}
+
+.pagination .page-link {
+  cursor: pointer;
+}
+
+.shop-toolbar .pagination,
+section .pagination {
+  flex-wrap: wrap;
+  justify-content: center;
+}
