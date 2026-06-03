@@ -25,7 +25,7 @@ export class ShopComponent implements OnInit, OnDestroy {
   searchTerm = '';
   shopParams: ShopParams = {
     pageNumber: 1,
-    pageSize: 2,
+    pageSize: 10,   // ← 10 products per page
     categoryId: 0,
     search: ''
   };
@@ -43,11 +43,9 @@ export class ShopComponent implements OnInit, OnDestroy {
     if (environment.assetsBaseURL) {
       return environment.assetsBaseURL;
     }
-
     if (environment.baseURL.startsWith('http')) {
       return environment.baseURL.replace(/\/api\/?$/i, '');
     }
-
     return 'https://localhost:7186';
   }
 
@@ -57,6 +55,10 @@ export class ShopComponent implements OnInit, OnDestroy {
     private route: ActivatedRoute,
     @Inject(PLATFORM_ID) private platformId: Object
   ) { }
+
+  // -----------------------------------------------------------------
+  // Lifecycle
+  // -----------------------------------------------------------------
 
   ngOnInit(): void {
     if (isPlatformBrowser(this.platformId)) {
@@ -75,22 +77,26 @@ export class ShopComponent implements OnInit, OnDestroy {
     this.querySub?.unsubscribe();
   }
 
+  // -----------------------------------------------------------------
+  // Computed
+  // -----------------------------------------------------------------
+
   get pages(): number[] {
-    return Array.from({ length: this.totalPages }, (_, index) => index + 1);
+    return Array.from({ length: this.totalPages }, (_, i) => i + 1);
   }
 
   get showingCount(): number {
     return this.products.length;
   }
 
+  // -----------------------------------------------------------------
+  // Data
+  // -----------------------------------------------------------------
+
   loadCategories(): void {
     this.categoryService.getAllCategories().subscribe({
-      next: (categories) => {
-        this.categories = categories;
-      },
-      error: (error: unknown) => {
-        console.error(error);
-      }
+      next: (categories) => { this.categories = categories; },
+      error: (error: unknown) => { console.error(error); }
     });
   }
 
@@ -99,9 +105,7 @@ export class ShopComponent implements OnInit, OnDestroy {
     this.errorMessage = null;
 
     this.shopService.getProducts(this.shopParams)
-      .pipe(finalize(() => {
-        this.isLoading = false;
-      }))
+      .pipe(finalize(() => { this.isLoading = false; }))
       .subscribe({
         next: (result) => {
           this.brokenImageKeys.clear();
@@ -117,6 +121,10 @@ export class ShopComponent implements OnInit, OnDestroy {
       });
   }
 
+  // -----------------------------------------------------------------
+  // User actions
+  // -----------------------------------------------------------------
+
   onCategorySelected(categoryId: number): void {
     this.shopParams.categoryId = categoryId;
     this.shopParams.pageNumber = 1;
@@ -124,10 +132,7 @@ export class ShopComponent implements OnInit, OnDestroy {
   }
 
   onPageChanged(page: number): void {
-    if (page < 1 || page > this.totalPages || page === this.shopParams.pageNumber) {
-      return;
-    }
-
+    if (page < 1 || page > this.totalPages || page === this.shopParams.pageNumber) return;
     this.shopParams.pageNumber = page;
     this.getProducts();
   }
@@ -145,6 +150,10 @@ export class ShopComponent implements OnInit, OnDestroy {
     this.getProducts();
   }
 
+  // -----------------------------------------------------------------
+  // Image helpers
+  // -----------------------------------------------------------------
+
   getProductPrice(product: IProduct): number {
     return product.price ?? product.newPrice;
   }
@@ -155,7 +164,7 @@ export class ShopComponent implements OnInit, OnDestroy {
 
   getVisibleImages(product: IProduct): string[] {
     return this.getProductImages(product).filter(
-      (_, index) => !this.brokenImageKeys.has(this.imageKey(product.id, index))
+      (_, i) => !this.brokenImageKeys.has(this.imageKey(product.id, i))
     );
   }
 
@@ -173,18 +182,14 @@ export class ShopComponent implements OnInit, OnDestroy {
 
   nextImage(product: IProduct): void {
     const images = this.getVisibleImages(product);
-    if (images.length <= 1) {
-      return;
-    }
+    if (images.length <= 1) return;
     const current = this.getActiveIndex(product.id);
     this.activeImageIndex[product.id] = (current + 1) % images.length;
   }
 
   prevImage(product: IProduct): void {
     const images = this.getVisibleImages(product);
-    if (images.length <= 1) {
-      return;
-    }
+    if (images.length <= 1) return;
     const current = this.getActiveIndex(product.id);
     this.activeImageIndex[product.id] = (current - 1 + images.length) % images.length;
   }
@@ -193,15 +198,15 @@ export class ShopComponent implements OnInit, OnDestroy {
     this.brokenImageKeys.add(this.imageKey(productId, index));
   }
 
+  // -----------------------------------------------------------------
+  // Private helpers
+  // -----------------------------------------------------------------
+
   private imageKey(productId: number, index: number): string {
     return `${productId}-${index}`;
   }
 
   private resolveErrorMessage(error: unknown, fallback: string): string {
-    if (error instanceof Error) {
-      return error.message;
-    }
-
-    return fallback;
+    return error instanceof Error ? error.message : fallback;
   }
 }

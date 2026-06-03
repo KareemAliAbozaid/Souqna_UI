@@ -60,18 +60,13 @@
 
     <div class="mb-3">
       <label for="photos" class="form-label">Photos</label>
-      <input
-        id="photos"
-        type="file"
-        class="form-control"
-        accept="image/*"
-        multiple
+      <input id="photos" type="file" class="form-control" accept="image/*" multiple
         (change)="onFilesSelected($event)" />
       <div class="form-text">
         {{ isEditMode ? 'Upload new photos to replace existing ones (optional).' : 'At least one photo is required.' }}
       </div>
-      <div *ngIf="photosRequiredError" class="text-danger mt-1">
-        Please select at least one photo.
+      <div *ngIf="fileError" class="text-danger mt-1">
+        {{ fileError }}
       </div>
       <div *ngIf="selectedFiles.length > 0" class="text-muted small mt-1">
         {{ selectedFiles.length }} file(s) selected
@@ -81,22 +76,14 @@
     <div *ngIf="existingImageUrls.length > 0" class="mb-3">
       <label class="form-label">Current photos ({{ existingImageUrls.length }})</label>
       <div class="d-flex flex-wrap gap-2">
-        <img
-          *ngFor="let url of existingImageUrls"
-          [src]="url"
-          alt="Current product"
-          class="current-product-image" />
+        <img *ngFor="let url of existingImageUrls" [src]="url" alt="Current product" class="current-product-image" />
       </div>
     </div>
 
     <div *ngIf="selectedPreviewUrls.length > 0" class="mb-3">
       <label class="form-label">New photos preview ({{ selectedPreviewUrls.length }})</label>
       <div class="d-flex flex-wrap gap-2">
-        <img
-          *ngFor="let url of selectedPreviewUrls"
-          [src]="url"
-          alt="Selected photo"
-          class="current-product-image" />
+        <img *ngFor="let url of selectedPreviewUrls" [src]="url" alt="Selected photo" class="current-product-image" />
       </div>
     </div>
 

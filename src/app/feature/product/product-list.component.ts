@@ -1,12 +1,16 @@
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { Component, Inject, OnInit, PLATFORM_ID } from '@angular/core';
 import { RouterModule } from '@angular/router';
-import { of } from 'rxjs';
-import { catchError, finalize } from 'rxjs/operators';
-import { environment } from '../../../environments/environment';
+import { finalize } from 'rxjs/operators';
 import { IProduct } from '../../models/product';
 import { ProductService } from '../../Core/service/product.service';
 import { getProductImageUrls } from '../../shared/utils/product-images';
+import { AssetsUrlService } from '../../Core/service/assets-url-service.service';
+
+interface ProductViewModel extends IProduct {
+  imageUrls: string[];
+  displayPrice: number;
+}
 
 @Component({
   standalone: true,
@@ -16,18 +20,16 @@ import { getProductImageUrls } from '../../shared/utils/product-images';
   styleUrls: ['./product-list.component.css']
 })
 export class ProductListComponent implements OnInit {
-  products: IProduct[] = [];
+  products: ProductViewModel[] = [];
   isLoading = false;
   errorMessage: string | null = null;
 
-  private readonly assetsBaseURL = environment.assetsBaseURL
-    || (environment.baseURL.startsWith('http')
-      ? environment.baseURL.replace(/\/api\/?$/i, '')
-      : 'https://localhost:7186');
+  pendingDeleteId: number | null = null;
 
   constructor(
     private productService: ProductService,
-    @Inject(PLATFORM_ID) private platformId: Object
+    private assetsUrlService: AssetsUrlService,
+    @Inject(PLATFORM_ID) private platformId: object
   ) { }
 
   ngOnInit(): void {
@@ -41,49 +43,52 @@ export class ProductListComponent implements OnInit {
     this.errorMessage = null;
 
     this.productService.getAllProducts()
-      .pipe(
-        finalize(() => {
-          this.isLoading = false;
-        })
-      )
+      .pipe(finalize(() => { this.isLoading = false; }))
       .subscribe({
         next: (products: IProduct[]) => {
-          this.products = products;
+          this.products = this.toViewModels(products);
         },
         error: (error: unknown) => {
-          this.errorMessage = error instanceof Error ? error.message : 'Failed to load products.';
+          this.errorMessage = error instanceof Error
+            ? error.message
+            : 'Failed to load products.';
         }
       });
   }
 
-  getProductPrice(product: IProduct): number {
-    return product.price ?? product.newPrice;
+  onDeleteRequest(id: number): void {
+    this.pendingDeleteId = id;
   }
 
-  getProductImages(product: IProduct): string[] {
-    return getProductImageUrls(product, this.assetsBaseURL);
+  onDeleteCancel(): void {
+    this.pendingDeleteId = null;
   }
 
-  onDeleteProduct(id: number): void {
-    if (!confirm('Are you sure you want to delete this product?')) {
-      return;
-    }
+  onDeleteConfirm(): void {
+    if (this.pendingDeleteId === null) return;
 
+    const id = this.pendingDeleteId;
+    this.pendingDeleteId = null;
     this.isLoading = true;
     this.errorMessage = null;
 
     this.productService.deleteProduct(id)
-      .pipe(
-        finalize(() => {
-          this.isLoading = false;
-        }),
-        catchError((error: unknown) => {
-          this.errorMessage = error instanceof Error ? error.message : 'Failed to delete product.';
-          return of(void 0);
-        })
-      )
-      .subscribe(() => {
-        this.loadProducts();
+      .pipe(finalize(() => { this.isLoading = false; }))
+      .subscribe({
+        next: () => this.loadProducts(),
+        error: (error: unknown) => {
+          this.errorMessage = error instanceof Error
+            ? error.message
+            : 'Failed to delete product.';
+        }
       });
+  }
+
+  private toViewModels(products: IProduct[]): ProductViewModel[] {
+    return products.map((p) => ({
+      ...p,
+      imageUrls: getProductImageUrls(p, this.assetsUrlService.baseURL),
+      displayPrice: p.price ?? p.newPrice
+    }));
   }
 }

@@ -28,11 +28,8 @@
       <tr *ngFor="let product of products">
         <th scope="row">{{ product.id }}</th>
         <td>
-          <div class="d-flex gap-1 flex-wrap" *ngIf="getProductImages(product).length > 0; else noThumb">
-            <img
-              *ngFor="let imageUrl of getProductImages(product)"
-              [src]="imageUrl"
-              [alt]="product.name"
+          <div class="d-flex gap-1 flex-wrap" *ngIf="product.imageUrls.length > 0; else noThumb">
+            <img *ngFor="let imageUrl of product.imageUrls" [src]="imageUrl" [alt]="product.name"
               class="product-thumb" />
           </div>
           <ng-template #noThumb>
@@ -40,14 +37,14 @@
           </ng-template>
         </td>
         <td>{{ product.name }}</td>
-        <td>{{ getProductPrice(product) | number: '1.2-2' }}</td>
+        <td>{{ product.displayPrice | number: '1.2-2' }}</td>
         <td>{{ product.oldPrice | number: '1.2-2' }}</td>
         <td>{{ product.categoryName }}</td>
         <td class="text-end">
           <a class="btn btn-sm btn-outline-secondary me-2" [routerLink]="['/products', product.id, 'edit']">
             Edit
           </a>
-          <button type="button" class="btn btn-sm btn-outline-danger" (click)="onDeleteProduct(product.id)">
+          <button type="button" class="btn btn-sm btn-outline-danger" (click)="onDeleteRequest(product.id)">
             Delete
           </button>
         </td>

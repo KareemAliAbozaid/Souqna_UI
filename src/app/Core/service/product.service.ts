@@ -25,7 +25,7 @@ export class ProductService {
       .get<Pagination<IProduct>>(this.resourceUrl, { params })
       .pipe(
         map((response) => response.data ?? []),
-        catchError((error) => this.handleError(error, 'getAllProducts'))
+        catchError(this.handleError('getAllProducts'))
       );
   }
 
@@ -39,26 +39,16 @@ export class ProductService {
           }
           return response.data;
         }),
-        catchError((error) => this.handleError(error, 'getProductById'))
+        catchError(this.handleError('getProductById'))
       );
   }
 
   addProduct(model: ProductFormModel): Observable<void> {
-    return this.http
-      .post<ApiResponse>(this.resourceUrl, this.toFormData(model))
-      .pipe(
-        map(() => void 0),
-        catchError((error) => this.handleError(error, 'addProduct'))
-      );
+    return this.upsertProduct(model);
   }
 
   updateProduct(id: number, model: ProductFormModel): Observable<void> {
-    return this.http
-      .put<ApiResponse>(this.resourceUrl, this.toFormData(model, id))
-      .pipe(
-        map(() => void 0),
-        catchError((error) => this.handleError(error, 'updateProduct'))
-      );
+    return this.upsertProduct(model, id);
   }
 
   deleteProduct(id: number): Observable<void> {
@@ -66,8 +56,21 @@ export class ProductService {
       .delete<ApiResponse>(`${this.resourceUrl}/${id}`)
       .pipe(
         map(() => void 0),
-        catchError((error) => this.handleError(error, 'deleteProduct'))
+        catchError(this.handleError('deleteProduct'))
       );
+  }
+
+
+  private upsertProduct(model: ProductFormModel, id?: number): Observable<void> {
+    const body = this.toFormData(model, id);
+    const request$ = id !== undefined
+      ? this.http.put<ApiResponse>(this.resourceUrl, body)
+      : this.http.post<ApiResponse>(this.resourceUrl, body);
+
+    return request$.pipe(
+      map(() => void 0),
+      catchError(this.handleError(id !== undefined ? 'updateProduct' : 'addProduct'))
+    );
   }
 
   private toFormData(model: ProductFormModel, id?: number): FormData {
@@ -90,19 +93,24 @@ export class ProductService {
     return formData;
   }
 
-  private handleError(error: HttpErrorResponse, operation: string) {
-    console.error(`ProductService ${operation} failed`, error);
+  private handleError(operation: string) {
+    return (error: HttpErrorResponse) => {
+      console.error(`ProductService.${operation} failed`, error);
 
-    if (error.status === 0) {
+      if (error.status === 0) {
+        return throwError(
+          () => new Error('Cannot reach the API. Ensure the backend is running and CORS/proxy is configured.')
+        );
+      }
+
+      const message =
+        typeof error.error === 'string'
+          ? error.error
+          : error.error?.message ?? error.message;
+
       return throwError(
-        () => new Error('Cannot reach the API. Ensure the backend is running and CORS/proxy is configured.')
+        () => new Error(message || 'An unexpected error occurred while communicating with the server.')
       );
-    }
-
-    const message = typeof error.error === 'string'
-      ? error.error
-      : error.error?.message ?? error.message;
-
-    return throwError(() => new Error(message || 'An unexpected error occurred while communicating with the server.'));
+    };
   }
 }
