@@ -12,6 +12,6 @@ export const customerGuard: CanActivateFn = (route, state) => {
   }
 
   console.warn('Access denied: Customer role required');
-  router.navigate(['/']);
+  router.navigate(['/shop']);
   return false;
 };

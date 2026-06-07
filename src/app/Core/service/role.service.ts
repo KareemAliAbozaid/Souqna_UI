@@ -7,24 +7,31 @@ import { UserRole } from '../../models/user-role';
 })
 export class RoleService {
 
-  constructor(private authService: AuthService) { }
+  constructor(private readonly authService: AuthService) { }
 
   getCurrentRole(): UserRole | null {
     const user = this.authService.getCurrentUser();
     return user ? user.role : null;
   }
 
+  private normalizeRole(role: UserRole | string | null): string | null {
+    if (!role) {
+      return null;
+    }
+    return role.toString().trim().toUpperCase();
+  }
+
   hasRole(role: UserRole | UserRole[]): boolean {
-    const currentRole = this.getCurrentRole();
+    const currentRole = this.normalizeRole(this.getCurrentRole());
     if (!currentRole) {
       return false;
     }
 
     if (Array.isArray(role)) {
-      return role.includes(currentRole);
+      return role.some((required) => this.normalizeRole(required) === currentRole);
     }
 
-    return currentRole === role;
+    return this.normalizeRole(role) === currentRole;
   }
 
   isCustomer(): boolean {
@@ -44,10 +51,10 @@ export class RoleService {
   }
 
   hasAllRoles(roles: UserRole[]): boolean {
-    const currentRole = this.getCurrentRole();
+    const currentRole = this.normalizeRole(this.getCurrentRole());
     if (!currentRole) {
       return false;
     }
-    return roles.includes(currentRole);
+    return roles.every((required) => this.normalizeRole(required) === currentRole);
   }
 }

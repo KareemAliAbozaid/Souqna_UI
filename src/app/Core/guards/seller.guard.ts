@@ -12,6 +12,6 @@ export const sellerGuard: CanActivateFn = (route, state) => {
   }
 
   console.warn('Access denied: Seller role required');
-  router.navigate(['/']);
+  router.navigate(['/shop']);
   return false;
 };

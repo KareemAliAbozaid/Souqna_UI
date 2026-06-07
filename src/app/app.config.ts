@@ -3,7 +3,7 @@ import { provideRouter } from '@angular/router';
 
 import { routes } from './app.routes';
 import { provideClientHydration, withEventReplay } from '@angular/platform-browser';
-import { provideHttpClient, withFetch, HTTP_INTERCEPTORS } from '@angular/common/http';
+import { provideHttpClient, withFetch, withInterceptorsFromDi, HTTP_INTERCEPTORS } from '@angular/common/http';
 import { AuthService } from './Core/service/auth.service';
 import { RoleService } from './Core/service/role.service';
 import { JwtInterceptor } from './Core/interceptors/jwt.interceptor';
@@ -15,6 +15,7 @@ export const appConfig: ApplicationConfig = {
     provideClientHydration(withEventReplay()),
     provideHttpClient(
       withFetch(),
+      withInterceptorsFromDi()
     ),
     AuthService,
     RoleService,

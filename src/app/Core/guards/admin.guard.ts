@@ -12,6 +12,6 @@ export const adminGuard: CanActivateFn = (route, state) => {
   }
 
   console.warn('Access denied: Admin role required');
-  router.navigate(['/']);
+  router.navigate(['/shop']);
   return false;
 };
