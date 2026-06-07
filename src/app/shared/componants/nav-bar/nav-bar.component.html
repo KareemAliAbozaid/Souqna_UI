@@ -10,7 +10,7 @@
     </button>
 
     <div class="collapse navbar-collapse" [ngClass]="{ show: !isCollapsed }">
-      <!-- Public Navigation -->
+      <!-- Public Navigation / Common links -->
       <ul class="navbar-nav">
         <li class="nav-item" *ngFor="let link of navLinks">
           <a class="nav-link" [routerLink]="link.path" routerLinkActive="active"
@@ -19,43 +19,38 @@
           </a>
         </li>
 
-        <!-- Customer Navigation -->
+        <!-- Before login: Login & Register as top-level links -->
+        <li class="nav-item" *ngIf="!isLoggedIn">
+          <a class="nav-link" routerLink="/login" routerLinkActive="active" (click)="closeNav()">Login</a>
+        </li>
+        <li class="nav-item" *ngIf="!isLoggedIn">
+          <a class="nav-link" routerLink="/register" routerLinkActive="active" (click)="closeNav()">Register</a>
+        </li>
+
+        <!-- Customer: show Cart as top-level, keep Orders/Profile inside account dropdown -->
         <li class="nav-item" *ngIf="isLoggedIn && userRole === UserRole.Customer">
           <a routerLink="/cart" class="nav-link" routerLinkActive="active" (click)="closeNav()">Cart</a>
         </li>
-        <li class="nav-item" *ngIf="isLoggedIn && userRole === UserRole.Customer">
-          <a routerLink="/orders" class="nav-link" routerLinkActive="active" (click)="closeNav()">Orders</a>
-        </li>
 
-        <!-- Seller Navigation -->
-        <li class="nav-item dropdown" *ngIf="isLoggedIn && userRole === UserRole.Seller">
-          <a class="nav-link dropdown-toggle" href="#" id="sellerDropdown" role="button" aria-haspopup="true"
-            aria-expanded="false" (click)="$event.preventDefault(); toggleDropdown()">
-            Seller Menu
-          </a>
-          <div class="dropdown-menu" [ngClass]="{ show: dropdownVisible }">
-            <a class="dropdown-item" routerLink="/seller/dashboard" (click)="closeNav()">Dashboard</a>
-            <a class="dropdown-item" routerLink="/seller/products" (click)="closeNav()">My Products</a>
-            <a class="dropdown-item" routerLink="/seller/orders" (click)="closeNav()">My Orders</a>
-            <a class="dropdown-item" routerLink="/seller/categories" (click)="closeNav()">My Categories</a>
-          </div>
-        </li>
+        <!-- Seller: show main seller links as top-level -->
+        <ng-container *ngIf="isLoggedIn && userRole === UserRole.Seller">
+          <li class="nav-item" *ngFor="let s of sellerLinks">
+            <a class="nav-link" [routerLink]="s.path" routerLinkActive="active" (click)="closeNav()">{{ s.label }}</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link text-danger" href="#" (click)="logout(); $event.preventDefault()">Logout</a>
+          </li>
+        </ng-container>
 
-        <!-- Admin Navigation -->
-        <li class="nav-item dropdown" *ngIf="isLoggedIn && userRole === UserRole.Admin">
-          <a class="nav-link dropdown-toggle" href="#" id="adminDropdown" role="button" aria-haspopup="true"
-            aria-expanded="false" (click)="$event.preventDefault(); toggleDropdown()">
-            Admin Menu
-          </a>
-          <div class="dropdown-menu" [ngClass]="{ show: dropdownVisible }">
-            <a class="dropdown-item" routerLink="/admin/dashboard" (click)="closeNav()">Dashboard</a>
-            <a class="dropdown-item" routerLink="/admin/products" (click)="closeNav()">Products</a>
-            <a class="dropdown-item" routerLink="/admin/categories" (click)="closeNav()">Categories</a>
-            <a class="dropdown-item" routerLink="/admin/users" (click)="closeNav()">Users</a>
-            <a class="dropdown-item" routerLink="/admin/orders" (click)="closeNav()">Orders</a>
-            <a class="dropdown-item" routerLink="/admin/reports" (click)="closeNav()">Reports</a>
-          </div>
-        </li>
+        <!-- Admin: show main admin links as top-level -->
+        <ng-container *ngIf="isLoggedIn && userRole === UserRole.Admin">
+          <li class="nav-item" *ngFor="let a of adminLinks">
+            <a class="nav-link" [routerLink]="a.path" routerLinkActive="active" (click)="closeNav()">{{ a.label }}</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link text-danger" href="#" (click)="logout(); $event.preventDefault()">Logout</a>
+          </li>
+        </ng-container>
       </ul>
 
       <form class="form-inline mx-auto" (ngSubmit)="onHeaderSearch($event)">
@@ -80,28 +75,36 @@
 
         <!-- User Account Menu -->
         <li class="nav-item dropdown">
-          <a class="nav-link" href="#" role="button" aria-haspopup="true" [attr.aria-expanded]="dropdownVisible"
-            (click)="$event.preventDefault(); toggleDropdown()">
+          <a class="nav-link" href="#" role="button" aria-haspopup="true" [attr.aria-expanded]="accountDropdownVisible"
+            (click)="$event.preventDefault(); toggleAccountDropdown()">
             <i class="material-icons">account_circle</i>
           </a>
-          <div class="dropdown-menu dropdown-menu-end" [ngClass]="{ show: dropdownVisible }">
+          <div class="dropdown-menu dropdown-menu-end" [ngClass]="{ show: accountDropdownVisible }">
             <!-- User Info -->
             <div *ngIf="isLoggedIn" class="dropdown-header">
-              <div>{{ getCurrentUser()?.name }}</div>
-              <small class="text-muted">{{ getCurrentUser()?.email }}</small>
+              <div class="d-flex align-items-center justify-content-between">
+                <div>{{ displayName }}</div>
+                <span *ngIf="displayRole" class="badge bg-primary text-uppercase ms-2">{{ displayRole }}</span>
+              </div>
+              <small class="text-muted">{{ displayEmail }}</small>
             </div>
             <div *ngIf="isLoggedIn" class="dropdown-divider"></div>
 
             <!-- Customer Profile -->
             <a *ngIf="isLoggedIn && userRole === UserRole.Customer" routerLink="/profile" class="dropdown-item"
               (click)="closeNav()">
-              My Profile <i class="fa fa-user"></i>
+              Profile <i class="fa fa-user"></i>
+            </a>
+
+            <a *ngIf="isLoggedIn && userRole === UserRole.Customer" routerLink="/orders" class="dropdown-item"
+              (click)="closeNav()">
+              Orders <i class="fa fa-list"></i>
             </a>
 
             <!-- Seller Profile -->
             <a *ngIf="isLoggedIn && userRole === UserRole.Seller" routerLink="/seller/profile" class="dropdown-item"
               (click)="closeNav()">
-              My Profile <i class="fa fa-user"></i>
+              Profile <i class="fa fa-user"></i>
             </a>
 
             <!-- Logout -->
@@ -111,10 +114,10 @@
 
             <!-- Not Logged In -->
             <div *ngIf="!isLoggedIn">
-              <a class="dropdown-item" href="#" (click)="$event.preventDefault()">
+              <a class="dropdown-item" routerLink="/register" (click)="closeNav()">
                 Register <i class="fa fa-user-plus"></i>
               </a>
-              <a class="dropdown-item" href="#" (click)="$event.preventDefault()">
+              <a class="dropdown-item" routerLink="/login" (click)="closeNav()">
                 Login <i class="fa fa-sign-in"></i>
               </a>
             </div>

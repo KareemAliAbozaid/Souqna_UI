@@ -2,7 +2,6 @@ import { NgClass, NgFor, NgIf } from '@angular/common';
 import { Component, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterLink, RouterLinkActive } from '@angular/router';
-import { HasRoleDirective } from '../../../Core/directives/has-role.directive';
 import { AuthService } from '../../../Core/service/auth.service';
 import { RoleService } from '../../../Core/service/role.service';
 import { UserRole } from '../../../models/user-role';
@@ -17,13 +16,14 @@ export interface NavLink {
 @Component({
   standalone: true,
   selector: 'app-nav-bar',
-  imports: [NgClass, NgFor, NgIf, RouterLink, RouterLinkActive, FormsModule, HasRoleDirective],
+  imports: [NgClass, NgFor, NgIf, RouterLink, RouterLinkActive, FormsModule],
   templateUrl: './nav-bar.component.html',
   styleUrls: ['./nav-bar.component.css']
 })
 export class NavBarComponent implements OnInit {
   isCollapsed = true;
-  dropdownVisible = false;
+  accountDropdownVisible = false;
+  roleDropdownVisible = false;
   headerSearch = '';
   isLoggedIn = false;
   userRole: UserRole | null = null;
@@ -35,21 +35,19 @@ export class NavBarComponent implements OnInit {
   ];
 
   readonly customerLinks: NavLink[] = [
-    { label: 'Cart', path: '/cart', roles: [UserRole.Customer] },
-    { label: 'Orders', path: '/orders', roles: [UserRole.Customer] },
-    { label: 'Profile', path: '/profile', roles: [UserRole.Customer] }
+    { label: 'Cart', path: '/cart', roles: [UserRole.Customer] }
   ];
 
   readonly sellerLinks: NavLink[] = [
-    { label: 'Seller Dashboard', path: '/seller/dashboard', roles: [UserRole.Seller] },
-    { label: 'My Products', path: '/seller/products', roles: [UserRole.Seller] },
-    { label: 'My Orders', path: '/seller/orders', roles: [UserRole.Seller] },
-    { label: 'My Categories', path: '/seller/categories', roles: [UserRole.Seller] },
-    { label: 'Seller Profile', path: '/seller/profile', roles: [UserRole.Seller] }
+    { label: 'Dashboard', path: '/seller/dashboard', roles: [UserRole.Seller] },
+    { label: 'Products', path: '/seller/products', roles: [UserRole.Seller] },
+    { label: 'Orders', path: '/seller/orders', roles: [UserRole.Seller] },
+    { label: 'Categories', path: '/seller/categories', roles: [UserRole.Seller] },
+    { label: 'Profile', path: '/seller/profile', roles: [UserRole.Seller] }
   ];
 
   readonly adminLinks: NavLink[] = [
-    { label: 'Admin Dashboard', path: '/admin/dashboard', roles: [UserRole.Admin] },
+    { label: 'Dashboard', path: '/admin/dashboard', roles: [UserRole.Admin] },
     { label: 'Products', path: '/admin/products', roles: [UserRole.Admin] },
     { label: 'Categories', path: '/admin/categories', roles: [UserRole.Admin] },
     { label: 'Users', path: '/admin/users', roles: [UserRole.Admin] },
@@ -60,9 +58,9 @@ export class NavBarComponent implements OnInit {
   readonly UserRole = UserRole;
 
   constructor(
-    private router: Router,
-    private authService: AuthService,
-    private roleService: RoleService
+    private readonly router: Router,
+    private readonly authService: AuthService,
+    private readonly roleService: RoleService
   ) { }
 
   ngOnInit(): void {
@@ -72,13 +70,24 @@ export class NavBarComponent implements OnInit {
     });
   }
 
-  toggleDropdown(): void {
-    this.dropdownVisible = !this.dropdownVisible;
+  toggleRoleDropdown(): void {
+    this.roleDropdownVisible = !this.roleDropdownVisible;
+    if (this.roleDropdownVisible) {
+      this.accountDropdownVisible = false;
+    }
+  }
+
+  toggleAccountDropdown(): void {
+    this.accountDropdownVisible = !this.accountDropdownVisible;
+    if (this.accountDropdownVisible) {
+      this.roleDropdownVisible = false;
+    }
   }
 
   closeNav(): void {
     this.isCollapsed = true;
-    this.dropdownVisible = false;
+    this.accountDropdownVisible = false;
+    this.roleDropdownVisible = false;
   }
 
   onHeaderSearch(event: Event): void {
@@ -104,5 +113,20 @@ export class NavBarComponent implements OnInit {
 
   hasRole(role: UserRole | UserRole[]): boolean {
     return this.roleService.hasRole(role);
+  }
+
+  get displayName(): string | null {
+    const user = this.getCurrentUser();
+    return user ? (user.name ?? user.email) : null;
+  }
+
+  get displayEmail(): string | null {
+    const user = this.getCurrentUser();
+    return user ? user.email : null;
+  }
+
+  get displayRole(): string | null {
+    const user = this.getCurrentUser();
+    return user ? user.role : null;
   }
 }

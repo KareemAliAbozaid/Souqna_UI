@@ -9,6 +9,7 @@ import { sellerGuard } from './Core/guards/seller.guard';
 import { adminGuard } from './Core/guards/admin.guard';
 import { authGuard } from './Core/guards/auth.guard';
 
+
 // Seller Components
 import { SellerDashboardComponent } from './feature/seller/seller-dashboard.component';
 import { SellerProductsComponent } from './feature/seller/seller-products.component';
@@ -29,6 +30,8 @@ import { CartComponent } from './feature/customer/cart.component';
 import { CheckoutComponent } from './feature/customer/checkout.component';
 import { CustomerOrdersComponent } from './feature/customer/customer-orders.component';
 import { CustomerProfileComponent } from './feature/customer/customer-profile.component';
+import { LoginComponent } from './feature/login.component';
+import { RegisterComponent } from './feature/register.component';
 
 export const routes: Routes = [
   {
@@ -39,6 +42,14 @@ export const routes: Routes = [
   {
     path: 'shop',
     component: ShopComponent
+  },
+  {
+    path: 'login',
+    component: LoginComponent
+  },
+  {
+    path: 'register',
+    component: RegisterComponent
   },
   {
     path: 'product/:id',
