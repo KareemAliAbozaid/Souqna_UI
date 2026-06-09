@@ -159,7 +159,9 @@ export class ShopComponent implements OnInit, OnDestroy {
   }
 
   getProductImages(product: IProduct): string[] {
-    return getProductImageUrls(product, this.assetsBaseURL);
+    const urls = getProductImageUrls(product, this.assetsBaseURL);
+    console.log('IMAGE URLS', urls);
+    return urls;
   }
 
   getVisibleImages(product: IProduct): string[] {
